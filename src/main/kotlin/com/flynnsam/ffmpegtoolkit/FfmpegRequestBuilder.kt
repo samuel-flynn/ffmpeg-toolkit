@@ -1,18 +1,57 @@
 package com.flynnsam.ffmpegtoolkit
 
+import com.flynnsam.ffmpegtoolkit.filters.FfmpegFilter
 import java.io.File
 
-class FfmpegRequestBuilder(val input : String, val outputFormat : OutputFormat) {
+class FfmpegRequestBuilder(input : String, private val outputFormat : OutputFormat) {
 
-    val inputFile : File
-
-    val request = FfmpegRequest()
+    private val request : FfmpegRequest
 
     init {
-        inputFile = File(input)
+        val inputFile = File(input)
         if (!inputFile.exists())
             throw IllegalArgumentException("Input file $input doesn't exist")
-        request.inputFile = inputFile
+        request = FfmpegRequest(inputFile)
+    }
+
+    fun withStartTime(seconds : Double) : FfmpegRequestBuilder {
+        request.startTime = seconds.toString()
+        return this
+    }
+
+    fun withStartTime(timestamp : String) : FfmpegRequestBuilder {
+        request.startTime = timestamp
+        return this
+    }
+
+    fun withOverwrite(overwrite : Boolean) : FfmpegRequestBuilder {
+        request.withOverwrite = overwrite
+        return this
+    }
+
+    fun withDuration(seconds : Double) : FfmpegRequestBuilder {
+        request.duration = seconds.toString()
+        return this
+    }
+
+    fun withDuration(timestamp : String) : FfmpegRequestBuilder {
+        request.duration = timestamp
+        return this
+    }
+
+    fun withOutputFile(filePath : String) : FfmpegRequestBuilder {
+        request.outputFile = File(filePath)
+        return this
+    }
+
+    fun withFilter(filter : FfmpegFilter) : FfmpegRequestBuilder {
+        request.filters.add(filter)
+        return this
+    }
+
+    fun withFrameRate(frameRate : Double) : FfmpegRequestBuilder {
+        request.frameRate = frameRate
+        return this
     }
 
     fun run() {
