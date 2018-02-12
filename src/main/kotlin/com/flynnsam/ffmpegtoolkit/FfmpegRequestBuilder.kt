@@ -39,8 +39,13 @@ class FfmpegRequestBuilder(input : String, private val outputFormat : OutputForm
         return this
     }
 
-    fun withOutputFile(filePath : String) : FfmpegRequestBuilder {
-        request.outputFile = File(filePath)
+    fun withOutputDir(dirPath : String) : FfmpegRequestBuilder {
+        request.outputDir = File(dirPath)
+        return this
+    }
+
+    fun withOutputFileName(fileName : String) : FfmpegRequestBuilder {
+        request.outputFileName = fileName
         return this
     }
 

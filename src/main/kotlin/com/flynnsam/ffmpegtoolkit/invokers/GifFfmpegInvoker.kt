@@ -3,7 +3,7 @@ package com.flynnsam.ffmpegtoolkit.invokers
 import com.flynnsam.ffmpegtoolkit.FfmpegRequest
 import java.io.File
 
-class GifFfmpegInvoker : AbstractFfmpegInvoker() {
+class GifFfmpegInvoker(executor : Runtime) : AbstractFfmpegInvoker(executor) {
 
     companion object {
         const val NO_AUDIO_PARAMETER = "-an"
@@ -14,8 +14,8 @@ class GifFfmpegInvoker : AbstractFfmpegInvoker() {
     override fun doSystemInvocations(ffmpegRequest: FfmpegRequest) {
 
         val paletteFile = createPalette(ffmpegRequest)
-        createGif(ffmpegRequest)
-        cleanUpPalette(ffmpegRequest)
+        createGif(ffmpegRequest, paletteFile)
+        cleanUpPalette(paletteFile)
     }
 
     private fun addNoAudio(stringBuilder: StringBuilder) {
@@ -24,19 +24,30 @@ class GifFfmpegInvoker : AbstractFfmpegInvoker() {
 
     private fun createPalette(ffmpegRequest: FfmpegRequest) : File {
 
-        val palettaFile = File()
+        val paletteFile = File("${ffmpegRequest.outputDir?.absolutePath}${File.separator}gif_palette.png")
 
         val paletteGenCommand = getGifBasics(ffmpegRequest)
 
         addSimpleVideoFilter(ffmpegRequest, paletteGenCommand)
         paletteGenCommand.append(" $SIMPLE_VIDEO_FILTER_PARAMETER \"palettegen=stats_mode=diff\"")
-        addOutputFile(ffmpegRequest, palettaFile)
+        addOutputFile(ffmpegRequest, paletteGenCommand)
 
-        Runtime.getRuntime().exec(paletteGenCommand.toString())
+        executor.exec(paletteGenCommand.toString())
+
+        return paletteFile
     }
 
-    private fun createGif(ffmpegRequest: FfmpegRequest) {
+    private fun createGif(ffmpegRequest: FfmpegRequest, paletteFile: File) {
 
+        val gifGenCommand = getGifBasics(ffmpegRequest)
+
+        addNoAudio(gifGenCommand)
+        gifGenCommand.append(" $INPUT_FILE_PARAMETER \"${paletteFile.absolutePath}\"")
+        addLibAVFilter(ffmpegRequest, gifGenCommand)
+        gifGenCommand.append(" $LIB_AV_FILTER_PARAMETER \" [x]; [x][1:v] paletteuse\"")
+        addOutputFile(ffmpegRequest, gifGenCommand)
+
+        executor.exec(gifGenCommand.toString())
     }
 
     private fun cleanUpPalette(paletteFile: File) {
@@ -55,5 +66,7 @@ class GifFfmpegInvoker : AbstractFfmpegInvoker() {
         addDuration(ffmpegRequest, commandLine)
         addFrameRate(ffmpegRequest, commandLine)
         addInputFile(ffmpegRequest, commandLine)
+
+        return commandLine
     }
 }

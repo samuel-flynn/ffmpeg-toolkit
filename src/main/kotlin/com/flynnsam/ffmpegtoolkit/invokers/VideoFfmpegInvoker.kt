@@ -2,7 +2,7 @@ package com.flynnsam.ffmpegtoolkit.invokers
 
 import com.flynnsam.ffmpegtoolkit.FfmpegRequest
 
-class VideoFfmpegInvoker : AbstractFfmpegInvoker() {
+class VideoFfmpegInvoker(executor : Runtime) : AbstractFfmpegInvoker(executor) {
 
     override val outputExtension: String = "mp4"
 
@@ -19,6 +19,6 @@ class VideoFfmpegInvoker : AbstractFfmpegInvoker() {
         addFrameRate(ffmpegRequest, commandLine)
         addOutputFile(ffmpegRequest, commandLine)
 
-        Runtime.getRuntime().exec(commandLine.toString())
+        executor.exec(commandLine.toString())
     }
 }

@@ -6,6 +6,6 @@ import com.flynnsam.ffmpegtoolkit.invokers.VideoFfmpegInvoker
 
 enum class OutputFormat(val invoker: FfmpegInvoker) {
 
-    MP4(VideoFfmpegInvoker()),
-    GIF(GifFfmpegInvoker())
+    MP4(VideoFfmpegInvoker(Runtime.getRuntime())),
+    GIF(GifFfmpegInvoker(Runtime.getRuntime()))
 }

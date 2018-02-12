@@ -5,7 +5,7 @@ import java.io.File
 import java.io.FileInputStream
 import java.util.*
 
-abstract class AbstractFfmpegInvoker : FfmpegInvoker {
+abstract class AbstractFfmpegInvoker(protected val executor : Runtime) : FfmpegInvoker {
 
     companion object {
         const val FFMPEG_BIN_PATH_PROPERTY_REF = "ffmpeg.bin.path"
@@ -90,9 +90,17 @@ abstract class AbstractFfmpegInvoker : FfmpegInvoker {
     }
 
     protected fun addOutputFile(ffmpegRequest: FfmpegRequest, stringBuilder: StringBuilder) {
-        val outputFile : String = when {
-            ffmpegRequest.outputFile != null -> (ffmpegRequest.outputFile as File).absolutePath
-            else -> "${ffmpegRequest.inputFile.parent}${File.separator}out.${outputExtension}"
+        var fileNameToUse : String
+
+        if (ffmpegRequest.outputFileName != null) {
+            fileNameToUse = ffmpegRequest.outputFileName as String
+            if (!fileNameToUse.endsWith(".${outputExtension}", true)) {
+                fileNameToUse = "$fileNameToUse.$outputExtension"
+            }
+        } else {
+            fileNameToUse = "out.$outputExtension"
         }
+
+        stringBuilder.append(" ${ffmpegRequest.outputDir?.absolutePath}${File.separator}$fileNameToUse ")
     }
 }
