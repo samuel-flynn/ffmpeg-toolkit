@@ -5,7 +5,10 @@ import java.io.File
 import java.io.FileInputStream
 import java.util.*
 
-abstract class AbstractFfmpegInvoker(protected val executor : Runtime) : FfmpegInvoker {
+/**
+ * Abstract {@link FfmpegInvoker} that defines constants and common functionality for concrete invokers.
+ */
+abstract class AbstractFfmpegInvoker(protected val executor: Runtime) : FfmpegInvoker {
 
     companion object {
         const val FFMPEG_BIN_PATH_PROPERTY_REF = "ffmpeg.bin.path"
@@ -35,40 +38,65 @@ abstract class AbstractFfmpegInvoker(protected val executor : Runtime) : FfmpegI
 
         ffmpegRequest.filters.forEach { filter -> filter.setup() }
 
-        doSystemInvocations(ffmpegRequest)
+        doExecutorInvocations(ffmpegRequest)
 
         ffmpegRequest.filters.forEach { filter -> filter.cleanUp() }
 
     }
 
-    abstract fun doSystemInvocations(ffmpegRequest: FfmpegRequest)
+    /**
+     * Do the executor invocations required by the format
+     * @param ffmpegRequest The options built by the user
+     */
+    abstract fun doExecutorInvocations(ffmpegRequest: FfmpegRequest)
 
-    abstract val outputExtension : String
+    /**
+     * The file extension the format uses
+     */
+    abstract val outputExtension: String
 
+    /**
+     * Utility function to add the overwrite parameter
+     */
     protected fun addOverwrite(ffmpegRequest: FfmpegRequest, stringBuilder: StringBuilder) {
         if (ffmpegRequest.withOverwrite) {
             stringBuilder.append(" $OVERWRITE_PARAMETER ")
         }
     }
 
+    /**
+     * Utility function to add the "no subtitles" parameter
+     */
     protected fun addNoSubtitles(stringBuilder: StringBuilder) {
         stringBuilder.append(" $NO_SUBTITLES_PARAMETER ")
     }
 
+    /**
+     * Utility function to add the start time parameter
+     */
     protected fun addStartTime(ffmpegRequest: FfmpegRequest, stringBuilder: StringBuilder) {
         stringBuilder.append(" $START_TIME_PARAMETER ${ffmpegRequest.startTime} ")
     }
 
+    /**
+     * Utility function to add the duration parameter
+     */
     protected fun addDuration(ffmpegRequest: FfmpegRequest, stringBuilder: StringBuilder) {
         if (ffmpegRequest.duration != null) {
             stringBuilder.append(" $DURATION_PARAMETER $ffmpegRequest.duration ")
         }
     }
 
+    /**
+     * Utility function to add the input file parameter
+     */
     protected fun addInputFile(ffmpegRequest: FfmpegRequest, stringBuilder: StringBuilder) {
         stringBuilder.append(" $INPUT_FILE_PARAMETER ${ffmpegRequest.inputFile.absolutePath} ")
     }
 
+    /**
+     * Utility function to add a simple filter parameter with all of the filters in the options
+     */
     protected fun addSimpleVideoFilter(ffmpegRequest: FfmpegRequest, stringBuilder: StringBuilder) {
         if (ffmpegRequest.filters.size > 0) {
             val filtersString = ffmpegRequest.filters.map { filter -> filter.getFilterString() }.joinToString(",")
@@ -76,6 +104,9 @@ abstract class AbstractFfmpegInvoker(protected val executor : Runtime) : FfmpegI
         }
     }
 
+    /**
+     * Utility function to add a LibAV filter parameter with all of the filters in the options
+     */
     protected fun addLibAVFilter(ffmpegRequest: FfmpegRequest, stringBuilder: StringBuilder) {
         if (ffmpegRequest.filters.size > 0) {
             val filtersString = ffmpegRequest.filters.map { filter -> filter.getFilterString() }.joinToString(",")
@@ -83,22 +114,24 @@ abstract class AbstractFfmpegInvoker(protected val executor : Runtime) : FfmpegI
         }
     }
 
+    /**
+     * Utility function to add the frame rate parameter
+     */
     protected fun addFrameRate(ffmpegRequest: FfmpegRequest, stringBuilder: StringBuilder) {
         if (ffmpegRequest.frameRate != null) {
             stringBuilder.append(" $FRAME_RATE_PARAMETER ${ffmpegRequest.frameRate.toString()} ")
         }
     }
 
+    /**
+     * Utility function to add the output file parameter
+     */
     protected fun addOutputFile(ffmpegRequest: FfmpegRequest, stringBuilder: StringBuilder) {
-        var fileNameToUse : String
+        var fileNameToUse: String
 
-        if (ffmpegRequest.outputFileName != null) {
-            fileNameToUse = ffmpegRequest.outputFileName as String
-            if (!fileNameToUse.endsWith(".${outputExtension}", true)) {
-                fileNameToUse = "$fileNameToUse.$outputExtension"
-            }
-        } else {
-            fileNameToUse = "out.$outputExtension"
+        fileNameToUse = ffmpegRequest.outputFileName as String
+        if (!fileNameToUse.endsWith(".${outputExtension}", true)) {
+            fileNameToUse = "$fileNameToUse.$outputExtension"
         }
 
         stringBuilder.append(" ${ffmpegRequest.outputDir?.absolutePath}${File.separator}$fileNameToUse ")

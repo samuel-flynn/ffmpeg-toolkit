@@ -2,11 +2,14 @@ package com.flynnsam.ffmpegtoolkit.invokers
 
 import com.flynnsam.ffmpegtoolkit.FfmpegRequest
 
-class VideoFfmpegInvoker(executor : Runtime) : AbstractFfmpegInvoker(executor) {
+/**
+ * Class for invoking ffmpeg to create videos as MP4s
+ */
+class MP4FfmpegInvoker(executor : Runtime) : AbstractFfmpegInvoker(executor) {
 
     override val outputExtension: String = "mp4"
 
-    override fun doSystemInvocations(ffmpegRequest: FfmpegRequest) {
+    override fun doExecutorInvocations(ffmpegRequest: FfmpegRequest) {
 
         val commandLine = StringBuilder(properties[FFMPEG_BIN_PATH_PROPERTY_REF].toString())
 

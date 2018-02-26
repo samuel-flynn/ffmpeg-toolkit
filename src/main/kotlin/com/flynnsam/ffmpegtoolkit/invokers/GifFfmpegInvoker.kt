@@ -3,6 +3,9 @@ package com.flynnsam.ffmpegtoolkit.invokers
 import com.flynnsam.ffmpegtoolkit.FfmpegRequest
 import java.io.File
 
+/**
+ * Class for invoking ffmpeg to create videos as animated GIFs
+ */
 class GifFfmpegInvoker(executor : Runtime) : AbstractFfmpegInvoker(executor) {
 
     companion object {
@@ -11,7 +14,7 @@ class GifFfmpegInvoker(executor : Runtime) : AbstractFfmpegInvoker(executor) {
 
     override val outputExtension: String = "gif"
 
-    override fun doSystemInvocations(ffmpegRequest: FfmpegRequest) {
+    override fun doExecutorInvocations(ffmpegRequest: FfmpegRequest) {
 
         val paletteFile = createPalette(ffmpegRequest)
         createGif(ffmpegRequest, paletteFile)
